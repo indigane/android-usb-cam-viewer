@@ -8,7 +8,8 @@
         android:shortcutLongLabel="@string/settings_title">
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass=".SettingsActivity" />
+            android:targetPackage="home.usbcamviewer.indigane"
+            android:targetClass="dev.yaky.usbcamviewer.SettingsActivity" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 </shortcuts>
