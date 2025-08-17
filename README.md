@@ -1,3 +1,7 @@
+**Fork of https://gitlab.com/yaky/android-usb-cam-viewer/**
+
+Original README:
+
 # Android USB Camera Viewer
 
 Simple Android app to display video feed from a connected USB camera. There are no controls or configuration - the app automatically detects the camera and displays the video using the highest resolution possible. The view area uses the most of the device's display, and might distort the original image.
