@@ -6,6 +6,7 @@ import android.Manifest;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
 import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
@@ -18,7 +19,6 @@ import android.content.SharedPreferences;
 import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.UVCCamera;
-import com.serenegiant.widget.UVCCameraTextureView;
 
 import java.util.List;
 
@@ -26,7 +26,8 @@ public class MainActivity extends AppCompatActivity {
 
     private USBMonitor mUsbMonitor;
     private UVCCamera mCamera;
-    private UVCCameraTextureView mUVCCameraView;
+    private SurfaceView mSurfaceView;
+    private Surface mSurface;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(flags, flags);
 
         setContentView(R.layout.activity_main);
-        mUVCCameraView = findViewById(R.id.camera_view);
+        mSurfaceView = findViewById(R.id.camera_surface_view);
 
         mUsbMonitor = new USBMonitor(this, mUsbMonitorOnDeviceConnectListener);
     }
@@ -72,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.close();
+        }
+        if (mSurface != null) {
+            mSurface.release();
         }
         mUsbMonitor.unregister();
         super.onStop();
@@ -129,12 +133,23 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (keepAspectRatio) {
-                mUVCCameraView.setAspectRatio((double) width / height);
-            } else {
-                mUVCCameraView.setAspectRatio(0.0);
+                android.view.View rootView = getWindow().getDecorView().getRootView();
+                final float videoAspectRatio = (float) width / height;
+                final float screenAspectRatio = (float) rootView.getWidth() / rootView.getHeight();
+
+                android.view.ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
+                if (videoAspectRatio > screenAspectRatio) {
+                    layoutParams.height = (int) (rootView.getWidth() / videoAspectRatio);
+                    layoutParams.width = rootView.getWidth();
+                } else {
+                    layoutParams.width = (int) (rootView.getHeight() * videoAspectRatio);
+                    layoutParams.height = rootView.getHeight();
+                }
+                mSurfaceView.setLayoutParams(layoutParams);
             }
 
-            camera.setPreviewDisplay(mUVCCameraView.getSurface());
+            mSurface = mSurfaceView.getHolder().getSurface();
+            camera.setPreviewDisplay(mSurface);
             camera.startPreview();
 
             mCamera = camera;
