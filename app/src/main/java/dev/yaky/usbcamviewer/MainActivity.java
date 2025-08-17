@@ -6,7 +6,6 @@ import android.Manifest;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
@@ -19,6 +18,7 @@ import android.content.SharedPreferences;
 import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.UVCCamera;
+import com.serenegiant.widget.UVCCameraTextureView;
 
 import java.util.List;
 
@@ -26,8 +26,7 @@ public class MainActivity extends AppCompatActivity {
 
     private USBMonitor mUsbMonitor;
     private UVCCamera mCamera;
-    private SurfaceView mSurfaceView;
-    private Surface mSurface;
+    private UVCCameraTextureView mUVCCameraView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         getWindow().setFlags(flags, flags);
 
         setContentView(R.layout.activity_main);
-        mSurfaceView = findViewById(R.id.camera_surface_view);
+        mUVCCameraView = findViewById(R.id.camera_view);
 
         mUsbMonitor = new USBMonitor(this, mUsbMonitorOnDeviceConnectListener);
     }
@@ -73,9 +72,6 @@ public class MainActivity extends AppCompatActivity {
         if (mCamera != null) {
             mCamera.stopPreview();
             mCamera.close();
-        }
-        if (mSurface != null) {
-            mSurface.release();
         }
         mUsbMonitor.unregister();
         super.onStop();
@@ -105,39 +101,40 @@ public class MainActivity extends AppCompatActivity {
 
             SharedPreferences settings = getSharedPreferences(SettingsActivity.PREFS_NAME, MODE_PRIVATE);
             String savedResolution = settings.getString(SettingsActivity.KEY_RESOLUTION, null);
+            boolean keepAspectRatio = settings.getBoolean(SettingsActivity.KEY_KEEP_ASPECT_RATIO, false);
+
+            int width = 0;
+            int height = 0;
 
             if (savedResolution != null) {
                 String[] parts = savedResolution.split("x");
-                int width = Integer.parseInt(parts[0]);
-                int height = Integer.parseInt(parts[1]);
-                try {
-                    camera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG);
-                } catch (final IllegalArgumentException e) {
-                    try {
-                        // fallback to YUV mode
-                        camera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE);
-                    } catch (final IllegalArgumentException e1) {
-                        camera.destroy();
-                        return;
-                    }
-                }
+                width = Integer.parseInt(parts[0]);
+                height = Integer.parseInt(parts[1]);
             } else {
                 var previewSize = camera.getSupportedSizeList().get(0);
+                width = previewSize.width;
+                height = previewSize.height;
+            }
+
+            try {
+                camera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG);
+            } catch (final IllegalArgumentException e) {
                 try {
-                    camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.FRAME_FORMAT_MJPEG);
-                } catch (final IllegalArgumentException e) {
-                    try {
-                        // fallback to YUV mode
-                        camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.DEFAULT_PREVIEW_MODE);
-                    } catch (final IllegalArgumentException e1) {
-                        camera.destroy();
-                        return;
-                    }
+                    // fallback to YUV mode
+                    camera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE);
+                } catch (final IllegalArgumentException e1) {
+                    camera.destroy();
+                    return;
                 }
             }
 
-            mSurface = mSurfaceView.getHolder().getSurface();
-            camera.setPreviewDisplay(mSurface);
+            if (keepAspectRatio) {
+                mUVCCameraView.setAspectRatio((double) width / height);
+            } else {
+                mUVCCameraView.setAspectRatio(0.0);
+            }
+
+            camera.setPreviewDisplay(mUVCCameraView.getSurface());
             camera.startPreview();
 
             mCamera = camera;

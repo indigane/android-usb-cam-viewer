@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">USB Camera</string>
     <string name="settings_title">Settings</string>
+    <string name="keep_aspect_ratio">Keep aspect ratio</string>
 </resources>
