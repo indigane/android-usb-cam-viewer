@@ -23,5 +23,5 @@ jobs:
         run: |
           git remote add gitlab https://gitlab.com/yaky/android-usb-cam-viewer.git
           git fetch gitlab --prune
-          git push origin "refs/remotes/gitlab/*:refs/heads/*"
+          git push origin "refs/remotes/gitlab/*:refs/heads/*" "^refs/remotes/gitlab/HEAD"
           git push origin --tags --force
