@@ -10,6 +10,8 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout target repository
         uses: actions/checkout@v4
@@ -21,5 +23,5 @@ jobs:
         run: |
           git remote add gitlab https://gitlab.com/yaky/android-usb-cam-viewer.git
           git fetch gitlab --prune
-          git push origin --all
-          git push origin --tags
+          git push origin "refs/remotes/gitlab/*:refs/heads/*"
+          git push origin --tags --force
