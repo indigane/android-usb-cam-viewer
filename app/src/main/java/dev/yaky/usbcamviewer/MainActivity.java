@@ -133,19 +133,23 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (keepAspectRatio) {
-                android.view.View rootView = getWindow().getDecorView().getRootView();
-                final float videoAspectRatio = (float) width / height;
-                final float screenAspectRatio = (float) rootView.getWidth() / rootView.getHeight();
+                final int finalWidth = width;
+                final int finalHeight = height;
+                runOnUiThread(() -> {
+                    android.view.View rootView = getWindow().getDecorView().getRootView();
+                    final float videoAspectRatio = (float) finalWidth / finalHeight;
+                    final float screenAspectRatio = (float) rootView.getWidth() / rootView.getHeight();
 
-                android.view.ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
-                if (videoAspectRatio > screenAspectRatio) {
-                    layoutParams.height = (int) (rootView.getWidth() / videoAspectRatio);
-                    layoutParams.width = rootView.getWidth();
-                } else {
-                    layoutParams.width = (int) (rootView.getHeight() * videoAspectRatio);
-                    layoutParams.height = rootView.getHeight();
-                }
-                mSurfaceView.setLayoutParams(layoutParams);
+                    android.view.ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
+                    if (videoAspectRatio > screenAspectRatio) {
+                        layoutParams.height = (int) (rootView.getWidth() / videoAspectRatio);
+                        layoutParams.width = rootView.getWidth();
+                    } else {
+                        layoutParams.width = (int) (rootView.getHeight() * videoAspectRatio);
+                        layoutParams.height = rootView.getHeight();
+                    }
+                    mSurfaceView.setLayoutParams(layoutParams);
+                });
             }
 
             mSurface = mSurfaceView.getHolder().getSurface();
