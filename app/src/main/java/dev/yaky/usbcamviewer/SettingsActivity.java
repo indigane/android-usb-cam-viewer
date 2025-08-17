@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.Surface;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,6 +26,7 @@ public class SettingsActivity extends AppCompatActivity {
     private USBMonitor mUsbMonitor;
     private UVCCamera mCamera;
     private ListView mResolutionsList;
+    private TextView mNoCameraMessage;
 
     public static final String PREFS_NAME = "CameraSettings";
     public static final String KEY_RESOLUTION = "resolution";
@@ -38,6 +40,7 @@ public class SettingsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mResolutionsList = findViewById(R.id.resolutions_list);
+        mNoCameraMessage = findViewById(R.id.no_camera_message);
 
         mUsbMonitor = new USBMonitor(this, mUsbMonitorOnDeviceConnectListener);
     }
@@ -48,14 +51,19 @@ public class SettingsActivity extends AppCompatActivity {
         mUsbMonitor.register();
         final List<DeviceFilter> filter = DeviceFilter.getDeviceFilters(this, R.xml.device_filter);
         if (filter.isEmpty()) {
-            Toast.makeText(this, "No device filter found", Toast.LENGTH_SHORT).show();
+            mResolutionsList.setVisibility(ListView.GONE);
+            mNoCameraMessage.setVisibility(TextView.VISIBLE);
+            mNoCameraMessage.setText("No device filter found");
             return;
         }
         final List<UsbDevice> usbDevices = mUsbMonitor.getDeviceList(filter.get(0));
         if (usbDevices.isEmpty()) {
-            Toast.makeText(this, "No camera connected", Toast.LENGTH_SHORT).show();
+            mResolutionsList.setVisibility(ListView.GONE);
+            mNoCameraMessage.setVisibility(TextView.VISIBLE);
             return;
         }
+        mResolutionsList.setVisibility(ListView.VISIBLE);
+        mNoCameraMessage.setVisibility(TextView.GONE);
         mUsbMonitor.requestPermission(usbDevices.get(0));
     }
 
