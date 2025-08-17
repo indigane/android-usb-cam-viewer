@@ -7,7 +7,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "dev.yaky.usbcamviewer"
+        applicationId "home.usbcamviewer.indigane"
         minSdk 24
         targetSdk 35
         versionCode 1
