@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.content.SharedPreferences;
+
 import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.UVCCamera;
@@ -101,19 +103,39 @@ public class MainActivity extends AppCompatActivity {
             UVCCamera camera = new UVCCamera();
             camera.open(ctrlBlock);
 
-            var previewSize = camera.getSupportedSizeList().get(0);
+            SharedPreferences settings = getSharedPreferences(SettingsActivity.PREFS_NAME, MODE_PRIVATE);
+            String savedResolution = settings.getString(SettingsActivity.KEY_RESOLUTION, null);
 
-            try {
-                camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.FRAME_FORMAT_MJPEG);
-            } catch (final IllegalArgumentException e) {
+            if (savedResolution != null) {
+                String[] parts = savedResolution.split("x");
+                int width = Integer.parseInt(parts[0]);
+                int height = Integer.parseInt(parts[1]);
                 try {
-                    // fallback to YUV mode
-                    camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.DEFAULT_PREVIEW_MODE);
-                } catch (final IllegalArgumentException e1) {
-                    camera.destroy();
-                    return;
+                    camera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG);
+                } catch (final IllegalArgumentException e) {
+                    try {
+                        // fallback to YUV mode
+                        camera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE);
+                    } catch (final IllegalArgumentException e1) {
+                        camera.destroy();
+                        return;
+                    }
+                }
+            } else {
+                var previewSize = camera.getSupportedSizeList().get(0);
+                try {
+                    camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.FRAME_FORMAT_MJPEG);
+                } catch (final IllegalArgumentException e) {
+                    try {
+                        // fallback to YUV mode
+                        camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.DEFAULT_PREVIEW_MODE);
+                    } catch (final IllegalArgumentException e1) {
+                        camera.destroy();
+                        return;
+                    }
                 }
             }
+
             mSurface = mSurfaceView.getHolder().getSurface();
             camera.setPreviewDisplay(mSurface);
             camera.startPreview();
