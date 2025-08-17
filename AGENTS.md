@@ -1,6 +1,6 @@
 # Android Project – Agent Guidelines
 
-This is an Android project written in Java.
+This is an Android project written in Java. It is a fork of https://gitlab.com/yaky/android-usb-cam-viewer/, as such any changes made should be rebaseable on top of the upstream.
 
 The project is developed fully online, without access to Android Studio. The debug and release APKs are compiled by GitHub CI.
 
