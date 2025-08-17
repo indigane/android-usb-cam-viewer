@@ -98,24 +98,29 @@ public class SettingsActivity extends AppCompatActivity {
             mCamera = new UVCCamera();
             mCamera.open(ctrlBlock);
 
-            List<Size> supportedSizes = mCamera.getSupportedSizeList();
-            List<String> resolutionStrings = new ArrayList<>();
+            final List<Size> supportedSizes = mCamera.getSupportedSizeList();
+            final List<String> resolutionStrings = new ArrayList<>();
             for (Size size : supportedSizes) {
                 resolutionStrings.add(size.width + "x" + size.height);
             }
 
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(SettingsActivity.this,
-                    android.R.layout.simple_list_item_1, resolutionStrings);
-            mResolutionsList.setAdapter(adapter);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(SettingsActivity.this,
+                            android.R.layout.simple_list_item_1, resolutionStrings);
+                    mResolutionsList.setAdapter(adapter);
 
-            mResolutionsList.setOnItemClickListener((parent, view, position, id) -> {
-                String selectedResolution = resolutionStrings.get(position);
-                SharedPreferences settings = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString(KEY_RESOLUTION, selectedResolution);
-                editor.apply();
-                Toast.makeText(SettingsActivity.this, "Resolution saved: " + selectedResolution, Toast.LENGTH_SHORT).show();
-                finish();
+                    mResolutionsList.setOnItemClickListener((parent, view, position, id) -> {
+                        String selectedResolution = resolutionStrings.get(position);
+                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = settings.edit();
+                        editor.putString(KEY_RESOLUTION, selectedResolution);
+                        editor.apply();
+                        Toast.makeText(SettingsActivity.this, "Resolution saved: " + selectedResolution, Toast.LENGTH_SHORT).show();
+                        finish();
+                    });
+                }
             });
         }
 
