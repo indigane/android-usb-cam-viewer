@@ -1,0 +1,25 @@
+name: Sync upstream from GitLab
+
+on:
+  # Automatically run once a week
+  schedule:
+    - cron: '0 0 * * 0'
+  # Allow running the workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repository
+        uses: actions/checkout@v4
+        with:
+          # We need to fetch all branches and tags
+          fetch-depth: 0
+
+      - name: Mirror from GitLab
+        run: |
+          git remote add gitlab https://gitlab.com/yaky/android-usb-cam-viewer.git
+          git fetch gitlab --prune
+          git push origin --all
+          git push origin --tags
