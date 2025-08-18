@@ -15,6 +15,13 @@
         app:title="@string/settings_title"
         app:titleTextColor="@android:color/white" />
 
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/keep_aspect_ratio_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/keep_aspect_ratio"
+        android:padding="16dp" />
+
     <ListView
         android:id="@+id/resolutions_list"
         android:layout_width="match_parent"

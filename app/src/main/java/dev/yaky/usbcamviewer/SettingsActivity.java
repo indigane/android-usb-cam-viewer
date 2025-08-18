@@ -6,6 +6,7 @@ import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
 import android.view.Surface;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,6 +31,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     public static final String PREFS_NAME = "CameraSettings";
     public static final String KEY_RESOLUTION = "resolution";
+    public static final String KEY_KEEP_ASPECT_RATIO = "keep_aspect_ratio";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +45,15 @@ public class SettingsActivity extends AppCompatActivity {
         mNoCameraMessage = findViewById(R.id.no_camera_message);
 
         mUsbMonitor = new USBMonitor(this, mUsbMonitorOnDeviceConnectListener);
+
+        CompoundButton keepAspectRatioSwitch = findViewById(R.id.keep_aspect_ratio_switch);
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        keepAspectRatioSwitch.setChecked(settings.getBoolean(KEY_KEEP_ASPECT_RATIO, false));
+        keepAspectRatioSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean(KEY_KEEP_ASPECT_RATIO, isChecked);
+            editor.apply();
+        });
     }
 
     @Override

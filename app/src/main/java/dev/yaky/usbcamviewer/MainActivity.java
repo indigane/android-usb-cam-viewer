@@ -105,35 +105,51 @@ public class MainActivity extends AppCompatActivity {
 
             SharedPreferences settings = getSharedPreferences(SettingsActivity.PREFS_NAME, MODE_PRIVATE);
             String savedResolution = settings.getString(SettingsActivity.KEY_RESOLUTION, null);
+            boolean keepAspectRatio = settings.getBoolean(SettingsActivity.KEY_KEEP_ASPECT_RATIO, false);
+
+            int width = 0;
+            int height = 0;
 
             if (savedResolution != null) {
                 String[] parts = savedResolution.split("x");
-                int width = Integer.parseInt(parts[0]);
-                int height = Integer.parseInt(parts[1]);
-                try {
-                    camera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG);
-                } catch (final IllegalArgumentException e) {
-                    try {
-                        // fallback to YUV mode
-                        camera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE);
-                    } catch (final IllegalArgumentException e1) {
-                        camera.destroy();
-                        return;
-                    }
-                }
+                width = Integer.parseInt(parts[0]);
+                height = Integer.parseInt(parts[1]);
             } else {
                 var previewSize = camera.getSupportedSizeList().get(0);
+                width = previewSize.width;
+                height = previewSize.height;
+            }
+
+            try {
+                camera.setPreviewSize(width, height, UVCCamera.FRAME_FORMAT_MJPEG);
+            } catch (final IllegalArgumentException e) {
                 try {
-                    camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.FRAME_FORMAT_MJPEG);
-                } catch (final IllegalArgumentException e) {
-                    try {
-                        // fallback to YUV mode
-                        camera.setPreviewSize(previewSize.width, previewSize.height, UVCCamera.DEFAULT_PREVIEW_MODE);
-                    } catch (final IllegalArgumentException e1) {
-                        camera.destroy();
-                        return;
-                    }
+                    // fallback to YUV mode
+                    camera.setPreviewSize(width, height, UVCCamera.DEFAULT_PREVIEW_MODE);
+                } catch (final IllegalArgumentException e1) {
+                    camera.destroy();
+                    return;
                 }
+            }
+
+            if (keepAspectRatio) {
+                final int finalWidth = width;
+                final int finalHeight = height;
+                runOnUiThread(() -> {
+                    android.view.View rootView = getWindow().getDecorView().getRootView();
+                    final float videoAspectRatio = (float) finalWidth / finalHeight;
+                    final float screenAspectRatio = (float) rootView.getWidth() / rootView.getHeight();
+
+                    android.view.ViewGroup.LayoutParams layoutParams = mSurfaceView.getLayoutParams();
+                    if (videoAspectRatio > screenAspectRatio) {
+                        layoutParams.height = (int) (rootView.getWidth() / videoAspectRatio);
+                        layoutParams.width = rootView.getWidth();
+                    } else {
+                        layoutParams.width = (int) (rootView.getHeight() * videoAspectRatio);
+                        layoutParams.height = rootView.getHeight();
+                    }
+                    mSurfaceView.setLayoutParams(layoutParams);
+                });
             }
 
             mSurface = mSurfaceView.getHolder().getSurface();
